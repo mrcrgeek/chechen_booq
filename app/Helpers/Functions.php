@@ -135,4 +135,15 @@ function decryptthis($data, $key='uguywgyweiqkwjdiw239&&kdafweih@#$%$#$#^$ihiwyh
     list($encrypted_data, $iv) = array_pad(explode('::', base64_decode($data), 2), 2, null);
     return openssl_decrypt($encrypted_data, 'aes-256-cbc', $encryption_key, 0, $iv);
 }
+
+function display_result($result){
+	
+	$result = [
+		"result" => sis($result['result'], []),
+		"http_code" => sis($result['http_code'], 200)
+	];
+	
+	header("HTTP/1.1 {$result['http_code']}", true, $result['http_code']);
+	echo json_encode($result['result']);
+}
 ?>
