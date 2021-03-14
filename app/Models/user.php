@@ -59,7 +59,7 @@ class user extends Model
 
         if ($sign_up && (!$this->is_user_name_taken($sign_up_data['user_name'])) )
         {
-            $sign_up_data['user_password'] = password_hash($sign_up_data['user_password'],PASSWORD_DEFAULT);
+            $sign_up_data['user_password'] = encryptthis($sign_up_data['user_password']);
 
             $send = mysqli_query(\connect(), "INSERT INTO `users`(`name`,`password`) VALUES('{$sign_up_data['user_name']}','{$sign_up_data['user_password']}')");
 
@@ -109,15 +109,32 @@ class user extends Model
 
         if($this->mysql_connection != false)
         {
-            $select_user = mysqli_query($this->mysql_connection, "SELECT * FROM `users` WHERE `user_name` = '{$login_data['user_name']}'");
+            $select_user = mysqli_query($this->mysql_connection, "SELECT * FROM `users` WHERE `name` = '{$login_data['user_name']}'");
             if ($select_user != false)
             {
                 while($user = mysqli_fetch_assoc($select_user))
                 {
-                    $result_object->result = [
-                        "result" => $user,
-                        "http_code" => 200
-                    ];
+                    $user['password'] = decryptthis($user['password']);
+                    if($user['password'] == $login_data['user_password']){
+                        $token = \json_encode($user);
+                        $token = \encryptthis($token);
+                        $result_object->result = [
+                            "result" => [
+                                "token" => $token
+                            ],
+                            "http_code" => 200
+                        ];
+                    }
+                    else
+                    {
+                        $result_object->result = [
+                            "result" => [
+                                "description" => "user name or password is wrong",
+                                "code" => 4
+                            ],
+                            "http_code" => 400
+                        ];
+                    }
                 }
             }
             else
